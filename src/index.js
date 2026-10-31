@@ -1187,12 +1187,20 @@ export default {
       if (request.method === "GET") return handleCoreadSearch(request, env, url);
       return json({ error: "method not allowed" }, 405);
     }
-    if (url.pathname !== "/mcp") return json({ error: "not found" }, 404);
+    // ChatGPT 自定义 MCP 目前不能配置任意静态 Authorization 请求头。
+    // 因此在保留标准 Bearer 鉴权的同时，也允许把同一个 URL-safe
+    // MCP_AUTH_TOKEN 放进私密 MCP URL：/mcp/<token> 或 /mcp?token=<token>。
+    // 完整 URL 等同于凭据，绝不能公开、截图或提交进仓库。
+    const pathToken = url.pathname.startsWith("/mcp/")
+      ? decodeURIComponent(url.pathname.slice("/mcp/".length))
+      : "";
+    if (url.pathname !== "/mcp" && !pathToken) return json({ error: "not found" }, 404);
 
-    // Bearer 鉴权：配置了 MCP_AUTH_TOKEN 就强制校验
+    // 配置了 MCP_AUTH_TOKEN 就强制校验；支持 Bearer、URL path、query 三种传递方式。
     if (env.MCP_AUTH_TOKEN) {
       const auth = request.headers.get("authorization") || "";
-      const got = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+      const bearerToken = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+      const got = bearerToken || pathToken || url.searchParams.get("token") || "";
       if (got !== env.MCP_AUTH_TOKEN) {
         return json({ jsonrpc: "2.0", error: { code: -32001, message: "unauthorized" }, id: null }, 401);
       }

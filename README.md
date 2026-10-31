@@ -1,6 +1,6 @@
 # 微信读书 · 远程 MCP
 
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Git-xian/weread-mcp-worker)
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/mintea04/weread-mcp-worker)
 
 把微信读书官方网关的能力包成 **远程 MCP**。手机 App 等**没有本地沙箱**的前端，填一个 URL + 口令就能调用（不需要在你手机上跑任何进程）。
 
@@ -78,7 +78,7 @@
 ## 命令行部署
 
 ```bash
-git clone https://github.com/Git-xian/weread-mcp-worker.git
+git clone https://github.com/mintea04/weread-mcp-worker.git
 cd weread-mcp-worker
 npm install
 npx wrangler login                        # 浏览器授权一次
@@ -135,7 +135,7 @@ Cloudflare 上要先绑一个 KV（只做一次，见下方[共读数据](#共�
 最短路径（VPS，Docker）：
 
 ```bash
-git clone https://github.com/Git-xian/weread-mcp-worker.git
+git clone https://github.com/mintea04/weread-mcp-worker.git
 cd weread-mcp-worker/deploy
 cp .env.example .env && vi .env     # 填 MCP_DOMAIN / WEREAD_API_KEY / MCP_AUTH_TOKEN
 docker compose up -d --build
@@ -162,6 +162,17 @@ npm run start:env
 - **请求头**：`Authorization: Bearer <你的 MCP_AUTH_TOKEN>`
 
 之后就能直接问，比如「看看我的书架」「我这个月读了多久」「三体有什么点评」。
+
+## ChatGPT 自定义 MCP 接入
+
+ChatGPT 当前不能手填任意静态 Authorization 请求头，因此本 fork 额外支持把同一个 URL-safe 口令放进私密 MCP URL：
+
+- **Server URL**：`https://<你的地址>/mcp/<你的 MCP_AUTH_TOKEN>`
+- **Authentication**：No authentication
+
+也兼容 query 形式：`https://<你的地址>/mcp?token=<你的 MCP_AUTH_TOKEN>`。
+
+> ⚠️ 完整 MCP URL 本身就是访问凭据。不要公开、截图、发给别人或提交到 GitHub；若怀疑泄露，立即更换 `MCP_AUTH_TOKEN`。
 
 ---
 
